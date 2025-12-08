@@ -85,10 +85,6 @@ summarized_data$exclude <- str_replace(summarized_data$exclude, "MR", "PCE")
 summarized_data$exclude <- factor(summarized_data$exclude,
                                   levels = c("HC vs WCE", "HC vs PCE", "PCE vs WCE"))
 
-rsconnect::setAccountInfo(name='elyamanlab',
-                          token='34B97BF32A1E8315D8775C6C91DA1F7E',
-                          secret='CfH0mWqIR9293y/ZBbhIKzx+NIolfSMzb//engDL')
-
 server <- function(input, output, session) {
   
   session$onSessionEnded(function() {
