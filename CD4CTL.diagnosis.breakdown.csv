@@ -1,0 +1,7 @@
+"condition","cloneSize","n"
+"HC","Medium (5 < X <= 20)",12
+"HC","Small (1 < X <= 5)",8
+"DCE","Large (20 < X <= 100)",13
+"DCE","Medium (5 < X <= 20)",46
+"DCE","Small (1 < X <= 5)",21
+"DRE","Small (1 < X <= 5)",40

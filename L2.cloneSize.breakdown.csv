@@ -1,0 +1,13 @@
+"predicted.celltype.l2","cloneSize","n"
+"CD4CTL","Large (20 < X <= 100)",13
+"CD4CTL","Medium (5 < X <= 20)",58
+"CD4CTL","Small (1 < X <= 5)",69
+"CD4TCM","Small (1 < X <= 5)",93
+"CD4TEM","Medium (5 < X <= 20)",10
+"CD4TEM","Small (1 < X <= 5)",40
+"CD8TCM","Small (1 < X <= 5)",69
+"CD8TEM","Hyperexpanded (100 < X <= 500)",225
+"CD8TEM","Large (20 < X <= 100)",379
+"CD8TEM","Medium (5 < X <= 20)",813
+"CD8TEM","Small (1 < X <= 5)",1282
+"MAIT","Small (1 < X <= 5)",32
