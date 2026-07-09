@@ -33,20 +33,23 @@ ggplot(MASCinput %>% filter(!cluster %in% c("B", "CD4T", "CD8T", "otherT", "Mono
   scale_color_manual(values = c("red", "black", "blue"))
 
 #GSEA plot of DRE vs DCE
-sheet_names <- excel_sheets("Supplementary table 9.xlsx")
+sheet_names <- excel_sheets("Supplementary table 15.xlsx")
 gsealist <- map(sheet_names,
-                       ~ read_excel("Supplementary table 9.xlsx", sheet = .x)) %>% 
+                       ~ read_excel("Supplementary table 15.xlsx", sheet = .x)) %>% 
   set_names(sheet_names)
 L1gseaoutput <- gsealist[c(1:7)]
 L2gseaoutput <- gsealist[c(8:25)]
 
-fullgsea <- bind_rows(L1gseaoutput$CD8T, L1gseaoutput$DC, L1gseaoutput$Mono,
-                      L2gseaoutput$Bintermediate, L2gseaoutput$CD14Mono,
-                      L2gseaoutput$CD16Mono, L2gseaoutput$CD4Naive,
-                      L2gseaoutput$CD4CTL, L2gseaoutput$CD8Naive,
-                      L2gseaoutput$pDC)
+fullgsea <- c()
+for (i in 1:length(gsealist)) {
+  if (nrow(gsealist[[i]]) > 0) {
+    fullgsea <- bind_rows(fullgsea,
+                          gsealist[[i]] %>% mutate(CellType = names(gsealist)[i]))
+  }
+}
 
-pathways <- fullgsea$Description[c(5,11,12,20,21,27,28,32,39,48,50,72,111,126,146,328,335)]
+pathways <- unique(fullgsea$Description)[c(36,40,42,52,55,62,65,71,75,81,82,90,105,109,115,153,
+                                           178)] #Version with batch and ncells covariates
 
 ggplot(fullgsea %>% filter(Description %in% pathways),
        aes(x = CellType, y = Description, size = p.adjust, col = NES)) +
@@ -55,10 +58,9 @@ ggplot(fullgsea %>% filter(Description %in% pathways),
   scale_y_discrete(labels = wrap_format(40))+
   theme(plot.title = element_text(hjust = 0.75)) +
   theme(axis.text.x=element_text(angle=45,hjust=1)) +
-  theme(axis.title.x = element_blank()) +
-  scale_color_gradient(low = "#132B43", high = "#3670A0")
+  theme(axis.title.x = element_blank())
 
-#CellChat of PCE vs WCE
+#CellChat of DRE vs DCE
 load("Cellchat.new.Seurat.object.l2.DCE.RData")
 load("Cellchat.new.Seurat.object.l2.DRE.RData")
 load("cellchat.new.l2.DRE.DCE.RData")
