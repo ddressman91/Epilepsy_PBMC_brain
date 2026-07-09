@@ -57,3 +57,60 @@ for (i in 1:length(DREvsHC)) {
 }
 
 save(DREvsHCgseaoutput, file = "GSEA.PBMCs.DRE.vs.HC.RData")
+
+#Proteomics
+dcevshc <- read_excel("Supplementary table 13.xlsx", sheet = 3)
+dcevshc$estimate <- -1 * dcevshc$estimate
+DCEvsHCgseainput = dcevshc[,"estimate"]
+names(DCEvsHCgseainput) = as.character(dcevshc[,"Assay"])
+DCEvsHCgseainput = sort(DCEvsHCgseainput, decreasing = TRUE)
+DCEvsHCgseaoutput <- gseGO(geneList = DCEvsHCgseainput,
+                                ont = "BP", OrgDb = "org.Hs.eg.db", keyType = "SYMBOL",
+                                exponent = 1, minGSSize = 15, maxGSSize = 200, eps = 1e-10,
+                                pvalueCutoff = 0.05, pAdjustMethod = "fdr", by = "fgsea")
+DCEvsHCgseaoutput <- DCEvsHCgseaoutput@result
+
+drevshc$estimate <- -1 * drevshc$estimate
+DREvsHCgseainput = drevshc[,"estimate"]
+names(DREvsHCgseainput) = as.character(drevshc[,"Assay"])
+DREvsHCgseainput = sort(DREvsHCgseainput, decreasing = TRUE)
+DREvsHCgseaoutput <- gseGO(geneList = DREvsHCgseainput,
+                           ont = "BP", OrgDb = "org.Hs.eg.db", keyType = "SYMBOL",
+                           exponent = 1, minGSSize = 15, maxGSSize = 200, eps = 1e-10,
+                           pvalueCutoff = 0.05, pAdjustMethod = "fdr", by = "fgsea")
+DREvsHCgseaoutput <- DREvsHCgseaoutput@result
+
+dcevshc <- read_excel("Supplementary table 13.xlsx", sheet = 5)
+drevsdce$estimate <- -1 * drevsdce$estimate
+DREvsDCEgseainput = drevsdce[,"estimate"]
+names(DREvsDCEgseainput) = as.character(drevsdce[,"Assay"])
+DREvsDCEgseainput = sort(DREvsDCEgseainput, decreasing = TRUE)
+DREvsDCEgseaoutput <- gseGO(geneList = DREvsDCEgseainput,
+                           ont = "BP", OrgDb = "org.Hs.eg.db", keyType = "SYMBOL",
+                           exponent = 1, minGSSize = 15, maxGSSize = 200, eps = 1e-10,
+                           pvalueCutoff = 0.05, pAdjustMethod = "fdr", by = "fgsea")
+DREvsDCEgseaoutput <- DREvsDCEgseaoutput@result
+
+#Brain
+sheet_names <- excel_sheets("Supplementary table 21.xlsx")
+TLEvsHC <- map(sheet_names,
+               ~ read_excel("Supplementary table 21.xlsx", sheet = .x)) %>% 
+  set_names(sheet_names)
+
+TLEvsHCgseainput <- vector("list", 10)
+names(TLEvsHCgseainput) <- names(TLEvsHC)
+TLEvsHCgseaoutput <- vector("list", 10)
+names(TLEvsHCgseaoutput) <- names(TLEvsHC)
+for (i in 1:length(TLEvsHC)) {
+  TLEvsHCgseainput[[i]] = TLEvsHC[[i]][,"log2FoldChange"]
+  names(TLEvsHCgseainput[[i]]) = as.character(TLEvsHC[[i]][,"Gene"])
+  TLEvsHCgseainput[[i]] = sort(TLEvsHCgseainput[[i]], decreasing = TRUE)
+  TLEvsHCgseaoutput[[i]] <- gseGO(geneList = TLEvsHCgseainput[[i]],
+                                  ont = "BP", OrgDb = "org.Hs.eg.db", keyType = "SYMBOL",
+                                  exponent = 1, minGSSize = 15, maxGSSize = 200, eps = 1e-10,
+                                  pvalueCutoff = 0.05, pAdjustMethod = "fdr", by = "fgsea")
+  TLEvsHCgseaoutput[[i]] <- TLEvsHCgseaoutput[[i]]@result
+  if (nrow(TLEvsHCgseaoutput[[i]])>0) {
+    TLEvsHCgseaoutput[[i]]$CellType <- names(TLEvsHCgseaoutput)[i]
+  }
+}
