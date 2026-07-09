@@ -134,6 +134,37 @@ rm(seurat)
 pbmc$predicted.celltype.l1 <- str_remove_all(pbmc$predicted.celltype.l1, " |_")
 pbmc$predicted.celltype.l2 <- str_remove_all(pbmc$predicted.celltype.l2, " |_")
 
+#If adding additional covariates to Seurat
+meta <- pbmc@meta.data
+clinical <- read.csv("C:/Users/dalli/Documents/Epilepsy PBMC-brain paper/Epilepsy.clinical.metrics.and.medications.csv")
+colnames(clinical)[1] <- "PatientID"
+meta$PatientID <- as.character(meta$PatientID)
+clinical$PatientID <- as.character(clinical$PatientID)
+clinical$logDSz <- log(clinical$Days.since.last.seizure)
+meta$PatientID[meta$PatientID == 1701] <- 1707
+ncellsl1 <- as.data.frame(table(meta$PatientID, meta$predicted.celltype.l1))
+ncellsl1 <- reshape(ncellsl1, timevar = "Var2", idvar = "Var1", times = "Freq", direction = "wide")
+colnames(ncellsl1)[1] <- "PatientID"
+colnames(ncellsl1) <- str_remove(colnames(ncellsl1), "Freq.")
+colnames(ncellsl1) <- str_remove(colnames(ncellsl1), " ")
+ncellsl1$PatientID <- as.character(ncellsl1$PatientID)
+ncellsl2 <- as.data.frame(table(meta$PatientID, meta$predicted.celltype.l2))
+ncellsl2 <- reshape(ncellsl2, timevar = "Var2", idvar = "Var1", times = "Freq", direction = "wide")
+colnames(ncellsl2)[1] <- "PatientID"
+colnames(ncellsl2) <- str_remove(colnames(ncellsl2), "Freq.")
+colnames(ncellsl2) <- str_remove(colnames(ncellsl2), " ")
+colnames(ncellsl2)[23] <- "NKCD56dim"
+ncellsl2$PatientID <- as.character(ncellsl2$PatientID)
+l1celltypes <- colnames(ncellsl1)[c(2:ncol(ncellsl1))]
+l2celltypes <- colnames(ncellsl2)[c(2:ncol(ncellsl2))]
+meta <- left_join(meta %>% dplyr::select(-Age), clinical, by = "PatientID")
+meta <- left_join(meta, ncellsl1, by = "PatientID")
+meta <- left_join(meta, ncellsl2, by = "PatientID")
+cellnames <- rownames(pbmc@meta.data)
+pbmc@meta.data <- meta
+rownames(pbmc@meta.data) <- cellnames
+pbmc@meta.data$Batch[pbmc@meta.data$PatientID == 74] <- "WHE007,WHE010" #If using batch as covariate
+
 #Epil_Ctrl column parsing for comparing epilepsy to control
 pbmc@meta.data$Epil_Ctrl <- NA
 pbmc@meta.data$Epil_Ctrl[pbmc@meta.data$condition == 1] <- 1 #Run for DCE vs HC
@@ -144,7 +175,7 @@ pbmc@meta.data$Epil_Ctrl[pbmc@meta.data$condition == 0] <- 0 #Run for DRE or DCE
 
 #Epil_Ctrl column parsing for interaction term between sex and diagnosis
 pbmc@meta.data$Diagnosis <- NA
-pbmc@meta.data$Epil_Ctrl[pbmc@meta.data$condition == 1] <- 1 #Run for DCE vs HC
+pbmc@meta.data$Diagnosis[pbmc@meta.data$condition == 1] <- 1 #Run for DCE vs HC
 pbmc@meta.data$Diagnosis[pbmc@meta.data$condition == 2 &
                            !(pbmc@meta.data$PatientID %in% c(25,61))] <- 1 #Run for DRE vs HC and DRE vs DCE
 pbmc@meta.data$Diagnosis[pbmc@meta.data$condition == 1] <- 0 #Run for DRE vs DCE
@@ -173,16 +204,16 @@ for(cat in cats){
   dp2 <- add_metadata(d2p_output = dp2, metadata = meta,
                     metadata_sample_var = "PatientID",
                     var_of_interest="Epil_Ctrl", var_of_interest_reference= 0,
-                    ctrl_vars = c("Age","Sex"))
+                    ctrl_vars = c("Age","Sex","Batch","Years.with.epilepsy","BMI","logDSz",names(dp2$pb)))
   print("voom")
 
 results <- map_dfr(names(dp2$pb), function(x) {
 print(x)
 if(ncol(dp2$pb[[x]])>=5){
-limma_fun(dp2, cluster_class_specific=x,var_of_interest = "Epil_Ctrl",ctrl_var =c("Age","Sex"))
+limma_fun(dp2, cluster_class_specific=x,var_of_interest = "Epil_Ctrl",ctrl_var =c("Age","Sex","Batch",x))
 }
 }
 )
-results %>% write.csv(paste0(directory,"limma_voom_",cat,"_condition1_vs_condition0.csv"), row.names = F)
+results %>% write.csv(paste0(directory,"limma_voom_",cat,"_DCE_vs_HC_with_ctrl_ages.csv"), row.names = F)
 
 }
