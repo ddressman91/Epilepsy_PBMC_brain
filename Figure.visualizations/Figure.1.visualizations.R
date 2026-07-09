@@ -43,31 +43,6 @@ Idents(seurat) <- "l2.celltypes.clean"
 DimPlot(seurat, label = T, repel = T) + theme(legend.position = "none") +
   ggtitle("UMAP projection of immune cell types")
 
-#Dot plot of cell type lineage marker expression
-seurat@meta.data$l2.celltypes.clean <- factor(seurat@meta.data$l2.celltypes.clean,
-                                                 levels = rev(c("B naive", "B intermediate", "B memory",
-                                                            "Plasmablast", "CD4 naive", "CD4 TCM",
-                                                            "CD4 TEM", "CD4 CTL", "Treg", "CD8 naive", "CD8 TCM",
-                                                            "CD8 TEM", "CD14 mono", "CD16 mono", "cDC2",
-                                                            "pDC", "gdT", "MAIT", "NK CD56dim", "NK CD56bright",
-                                                            "NK proliferating", "HSPC", "Platelet", "dnT",
-                                                            "ILC", "CD4 proliferating", "CD8 proliferating", "ASDC")))
-Idents(seurat) <- "l2.celltypes.clean"
-DotPlot(seurat, features = c("CD3E", "CD4", "IL7R", "CCR7", "CD8A", "NOSIP", "GZMA", "NKG7",
-                            "GNLY", "FOXP3", "TRAV1-2", "TRGC1", "TRGV9", "TRDV2", "CD79A",
-                            "MS4A1", "POU2AF1", "HLA-DRB1", "CST3", "FCER1A", "LYZ", "S100A9",
-                            "CD14", "FCGR3A", "FCER1G"),
-        idents = c("B naive", "B intermediate", "B memory",
-                   "Plasmablast", "CD4 naive", "CD4 TCM",
-                   "CD4 TEM", "CD4 CTL", "Treg", "CD8 naive", "CD8 TCM",
-                   "CD8 TEM", "CD14 mono", "CD16 mono", "cDC2",
-                   "pDC", "gdT", "MAIT", "NK CD56dim", "NK CD56bright",
-                   "NK proliferating", "HSPC", "Platelet"),
-        dot.min = 0.1, col.min = 0, assay = "SCT") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  theme(axis.title.y = element_blank()) + theme(axis.title.x = element_blank()) +
-  ggtitle("Dot plot of selected cell type markers")
-
 #Donut plot of cell type proportions for L1 and L2 cell types, excluding
 ## cell types with <100 cells
 celltypes <- read_xlsx("Supplementary table 1.xlsx", sheet = 2)
@@ -140,7 +115,32 @@ ggplot(MASCinput %>% filter(!cluster %in% c("B", "CD4T", "CD8T", "otherT", "Mono
        aes(x = cluster, y = log2(OR), ymin = log2(CI.lower),
            ymax = log2(CI.upper), shape = Group, col = Significance)) +
   geom_pointrange(position = position_dodge2(width = 0.7)) +
-  xlab("Cell type") + ylab("log2(Odds Ratio)") + #ylim(c(-8,5.1)) +
+  xlab("Cell type") + ylab("log2(Odds Ratio)") + ylim(c(-8,5.1)) +
   theme_bw() + theme(axis.text.x=element_text(angle=45,hjust=1)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   scale_color_manual(values = c("red", "black", "blue"))
+
+#Dot plot of cell type lineage marker expression
+seurat@meta.data$l2.celltypes.clean <- factor(seurat@meta.data$l2.celltypes.clean,
+                                              levels = rev(c("B naive", "B intermediate", "B memory",
+                                                             "Plasmablast", "CD4 naive", "CD4 TCM",
+                                                             "CD4 TEM", "CD4 CTL", "Treg", "CD8 naive", "CD8 TCM",
+                                                             "CD8 TEM", "CD14 mono", "CD16 mono", "cDC2",
+                                                             "pDC", "gdT", "MAIT", "NK CD56dim", "NK CD56bright",
+                                                             "NK proliferating", "HSPC", "Platelet", "dnT",
+                                                             "ILC", "CD4 proliferating", "CD8 proliferating", "ASDC")))
+Idents(seurat) <- "l2.celltypes.clean"
+DotPlot(seurat, features = c("CD3E", "CD4", "IL7R", "CCR7", "CD8A", "NOSIP", "GZMA", "NKG7",
+                             "GNLY", "FOXP3", "TRAV1-2", "TRGC1", "TRGV9", "TRDV2", "CD79A",
+                             "MS4A1", "POU2AF1", "HLA-DRB1", "CST3", "FCER1A", "LYZ", "S100A9",
+                             "CD14", "FCGR3A", "FCER1G"),
+        idents = c("B naive", "B intermediate", "B memory",
+                   "Plasmablast", "CD4 naive", "CD4 TCM",
+                   "CD4 TEM", "CD4 CTL", "Treg", "CD8 naive", "CD8 TCM",
+                   "CD8 TEM", "CD14 mono", "CD16 mono", "cDC2",
+                   "pDC", "gdT", "MAIT", "NK CD56dim", "NK CD56bright",
+                   "NK proliferating", "HSPC", "Platelet"),
+        dot.min = 0.1, col.min = 0, assay = "SCT") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  theme(axis.title.y = element_blank()) + theme(axis.title.x = element_blank()) +
+  ggtitle("Dot plot of selected cell type markers")
